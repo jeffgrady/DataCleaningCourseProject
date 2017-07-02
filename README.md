@@ -16,3 +16,5 @@ Data Cleaning course project.
 * `CodeBook.md` a description of the data and how it was processed.
 * `tidy_data.txt` is a text file of the mean of every variable in the combined data for all activities
    and all subjects.  It was also written using R's `write.table()`.
+
+Please let me know if you have any questions.
