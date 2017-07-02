@@ -1,22 +1,19 @@
 # run_analysis.R
 library(dplyr)
 
-# FIXME:  parameterize paths
-
+# Set your raw data directory here
 BASE_DATA_DIR <- "UCI HAR Dataset/"
 
+# Convenience function for creating paths based on BASE_DATA_DIR.
+# Takes ... arguments and pastes them together starting with BASE_DATA_DIR
 mydir <- function(...) {
     paste(BASE_DATA_DIR, ..., sep = "")
 }
 
-trim <- function(my_line) {
-    gsub("(^\\s+)|(\\s+$)", "", my_line)
-}
-
-splitNumericByWhitespace <- function(my_line) {
-    as.numeric(unlist(strsplit(my_line, "\\s+", perl = TRUE)))
-}
-
+# Read y_test and y_train data files and apply activity labels as a factor.
+# Arguments: file_type can be "test" or "train" and activityLabels is a
+# data frame.
+# Returns a data frame of the result.
 readYDataByType <- function(file_type, activityLabels) {
     if ((file_type != "test") & (file_type != "train")) {
         stop("invalid file_type")
@@ -31,93 +28,54 @@ readYDataByType <- function(file_type, activityLabels) {
     ydata
 }
 
+# Read X_test and X_train data files into a data frame and uses the 
+# data frame field features$name as columns.
+# Arguments: file_type can be "test" or "train" and features is a
+# data frame.
+# Returns a data frame of the result.
 readXDataByType <- function(file_type, features) {
     if ((file_type != "test") & (file_type != "train")) {
         stop("invalid file_type")
     }
     filename <- mydir(file_type, "/X_", file_type, ".txt")
-    df <- read.table(filename,
-                     col.names = features$name,
-                     strip.white = TRUE)
-    df
+    read.table(filename, col.names = features$name, strip.white = TRUE)
 }
 
+# Reads activity_labels.txt and returns a data frame.
 readActivityLabels <- function() {
-    activityLabels <- read.table(mydir("activity_labels.txt"),
-                                 col.names = c("activityId", "activityLabel"))
-    activityLabels
+    read.table(mydir("activity_labels.txt"),
+               col.names = c("activityId", "activityLabel"))
 }
 
-readFeatures <- function() {
-    features <- read.table(mydir("features.txt"),
-                          col.names = c("featureId", "featureLabel"))
-    features
-}
-
+# Reads subject_test and subject_train and returns a data frame.
+# Arguments: file_type can be "test" or "train"
 readSubjectsByType <- function(file_type) {
     if ((file_type != "test") & (file_type != "train")) {
         stop("invalid file_type")
     }
     filename <- mydir(file_type, "/subject_", file_type, ".txt")
-    subjects <- read.table(filename,
-                           col.names = c("subjectId"),
-                           strip.white = TRUE)
-    subjects
+    read.table(filename, col.names = c("subjectId"), strip.white = TRUE)
 }
 
+# Reads features.txt and returns a data frame.
 readFeatures <- function() {
-    featureData <- read.table(mydir("features.txt"),
-                              col.names = c("id", "name"))
-    featureData
+    read.table(mydir("features.txt"), col.names = c("id", "name"))
 }
 
-readFiles <- function(file_type) {
-    if ((file_type != "test") & (file_type != "train")) {
-        stop("invalid file_type")
-    }
-    df_list <- list()
-    dirname <- mydir(file_type, "/Inertial Signals/")
-    print(dirname)
-    for (filename in list.files(dirname)) {
-        print(paste("reading: ", filename))
-        # var_name <- gsub(paste("_", file_type, ".txt", sep=""),
-        #                  "",
-        #                  filename)
-        var_name <- gsub(".txt", "", filename)
-        print(paste("var name is:", var_name))
-        file_data <- file(paste(dirname, "/", filename, sep=""), "r")
-        var_data <- list()
-        i <- 0
-        for (my_line in readLines(file_data)) {
-            my_line <- trim(my_line)
-            vec <- splitNumericByWhitespace(my_line)
-            # FIXME:  optimize this
-            # var_data <- c(var_data, vec)
-            var_data[[i]] <- vec
-            i <- i + 1
-        }
-        close(file_data)
-        df_list[[var_name]] <- var_data
-    }
-    data.frame(df_list)
-}
-
-# FIXME:  oh, so are the computed values provided to test to see if we
-#         read the data in correctly?  Possible.  Could try it.
 
 main <- function() {
     features <- readFeatures()
     activityLabels <- readActivityLabels()
 
     testData <- readXDataByType("test", features)
-    subjects <- readSubjectsByType("test")
     ydata <- readYDataByType("test", activityLabels)
+    subjects <- readSubjectsByType("test")
     ydata <- cbind(ydata, subjects)
     testData <- cbind(testData, ydata)
     
     trainData <- readXDataByType("train", features)
-    subjects <- readSubjectsByType("train")
     ydata <- readYDataByType("train", activityLabels)
+    subjects <- readSubjectsByType("train")
     ydata <- cbind(ydata, subjects)
     trainData <- cbind(trainData, ydata)
     
