@@ -9,6 +9,8 @@ Data Cleaning course project.
   assignment and outputs the file `tidy_data.txt`.  To use
   `run_analysis.R`:
 ```
+# In run_analysis.R, set BASE_DATA_DIR to the appropriate location.
+# The default is:  BASE_DATA_DIR <- "UCI HAR Dataset/"
 > source('run_analysis.R')
 > main()
 ```
