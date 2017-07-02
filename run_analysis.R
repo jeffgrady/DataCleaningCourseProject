@@ -122,4 +122,6 @@ main <- function() {
     trainData <- cbind(trainData, ydata)
     
     combinedData <- rbind(testData, trainData)
+    write.table(combinedData, "combined_data.txt")
+    combinedData
 }

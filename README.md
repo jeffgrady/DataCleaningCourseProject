@@ -83,3 +83,7 @@ combine the raw data I described above into a data frame:
 The result is a data frame with 10299 observations and 564 variables:
 the 561 from `features.txt`, plus 3 more: `activityId`, `activityLabel`, and `subjectId`.
 
+## Final Results
+
+The combined data set is stored in `combined_data.txt`.  It was
+written by R's `write.table()`.
