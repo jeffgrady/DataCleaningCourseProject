@@ -118,7 +118,6 @@ getCombinedData <- function() {
 # assemble the combined data.  tidy it.  write them to files.
 main <- function() {
     combinedData <- getCombinedData()
-    write.table(combinedData, "combined_data.txt")
     tidyData <- tidy(combinedData)
-    write.table(tidyData, "tidy_data.txt")
+    write.table(tidyData, "tidy_data.txt", row.names = FALSE)
 }
