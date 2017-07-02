@@ -62,24 +62,63 @@ readFeatures <- function() {
     read.table(mydir("features.txt"), col.names = c("id", "name"))
 }
 
+# Clean the columns.  Takes a data frame as a parameter, returns a data
+# frame that only includes columns referencing "mean" or "std", case
+# insensitive.
+cleanColumns <- function(my_data) {
+    cols <- names(my_data)
+    my_data[,cols[grepl("(mean|std)", cols, ignore.case = TRUE)]]
+}
 
-main <- function() {
+# Takes combinedData as an argument and returns a table
+# containing the mean for each variable for every subject and activity.
+tidy <- function(my_data) {
+    my_data$subject.activity <- paste(my_data$subjectId,
+                                      my_data$activityId,
+                                      sep = ".")
+    my_data$subject.activity <- factor(my_data$subject.activity)
+    df <- data.frame(subject.activity=unique(my_data$subject.activity))
+    new_names <- c("subject.activity")
+    for (col in 1:(length(names(my_data))-4)) {
+        new_col <- paste(names(my_data)[col], "mean", sep = ".")
+        new_names <- c(new_names, new_col)
+        new_means <- tapply(my_data[,col],
+                            my_data$subject.activity,
+                            FUN = mean,
+                            simplify = T)
+        df <- cbind(df, new_means)
+    }
+    colnames(df) <- new_names
+    df
+}
+
+# returns a data frame of the combined, cleaned data
+getCombinedData <- function() {
     features <- readFeatures()
     activityLabels <- readActivityLabels()
 
     testData <- readXDataByType("test", features)
+    testData <- cleanColumns(testData)
     ydata <- readYDataByType("test", activityLabels)
     subjects <- readSubjectsByType("test")
     ydata <- cbind(ydata, subjects)
     testData <- cbind(testData, ydata)
     
     trainData <- readXDataByType("train", features)
+    trainData <- cleanColumns(trainData)
     ydata <- readYDataByType("train", activityLabels)
     subjects <- readSubjectsByType("train")
     ydata <- cbind(ydata, subjects)
     trainData <- cbind(trainData, ydata)
     
     combinedData <- rbind(testData, trainData)
-    write.table(combinedData, "combined_data.txt")
     combinedData
+}
+
+# assemble the combined data.  tidy it.  write them to files.
+main <- function() {
+    combinedData <- getCombinedData()
+    write.table(combinedData, "combined_data.txt")
+    tidyData <- tidy(combinedData)
+    write.table(tidyData, "tidy_data.txt")
 }
